@@ -2,6 +2,7 @@ package io.github.windymelt.rss2discord
 
 import cats.effect.IO
 import cats.effect.IOApp
+import com.amazonaws.services.lambda.runtime.Context
 import com.github.nscala_time.time.Imports._
 import com.rometools.rome.feed._
 import com.rometools.rome.feed.synd.SyndEntry
@@ -11,6 +12,8 @@ import io.github.windymelt.rss2discord.endpoint.Discord
 import org.http4s.blaze.client.BlazeClientBuilder
 import sttp.tapir.client.http4s.Http4sClientInterpreter
 
+import java.io.InputStream
+import java.io.OutputStream
 import java.net.URL
 import scala.concurrent.duration.FiniteDuration
 
@@ -24,6 +27,9 @@ extension (e: SyndEntry)
     .toDateTime(DateTimeZone.forOffsetHours(9))
 
 object Rss2Discord extends IOApp.Simple {
+  def handler(in: InputStream, out: OutputStream, ctx: Context): Unit = main(
+    Array()
+  )
   def run: IO[Unit] = {
     import cats.implicits._
     import scala.collection.JavaConverters._

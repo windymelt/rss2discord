@@ -17,6 +17,8 @@ object rss2discord extends RootModule with ScalaModule with PublishModule {
     ivy"com.github.nscala-time::nscala-time:2.32.0"
   )
 
+  // Ensure AWS Lambda to extract JAR file
+  override def prependShellScript: T[String] = ""
   override def artifactName = "rss2discord"
   override def sonatypeSnapshotUri =
     "https://s01.oss.sonatype.org/content/repositories/snapshots"
