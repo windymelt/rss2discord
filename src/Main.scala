@@ -19,12 +19,25 @@ import scala.concurrent.duration.FiniteDuration
 
 val feedUrlEnv: Option[String] = sys.env.get("RSS_URL")
 val webhookUrl: String = sys.env("WEBHOOK_URL")
+val tzOffset: Int = sys.env
+  .get("TZ_OFFSET")
+  .map(_.toInt)
+  .getOrElse(
+    FiniteDuration(
+      DateTime.now().zone.getOffset(DateTime.now()),
+      "milliseconds"
+    ).toHours.toInt
+  )
 
 extension (e: SyndEntry)
-  def publishedDateTime: DateTime = e
-    .getPublishedDate()
-    .toLocalDateTime
-    .toDateTime(DateTimeZone.forOffsetHours(9))
+  def publishedDateTime: Option[DateTime] = Option(e.getPublishedDate).map {
+    _.toLocalDateTime
+      .toDateTime(DateTimeZone.forOffsetHours(tzOffset))
+  }
+  def updatedDateTime: Option[DateTime] = Option(e.getUpdatedDate).map {
+    _.toLocalDateTime
+      .toDateTime(DateTimeZone.forOffsetHours(tzOffset))
+  }
 
 object Rss2Discord extends IOApp.Simple {
   def handler(in: InputStream, out: OutputStream, ctx: Context): Unit = main(
@@ -41,9 +54,12 @@ object Rss2Discord extends IOApp.Simple {
     val entriesToPost = feed
       .getEntries()
       .asScala
-      .filter(
-        _.publishedDateTime.isAfter(now.minusMinutes(30))
-      )
+      .filter {
+        case e if (e.publishedDateTime orElse e.updatedDateTime).isDefined =>
+          val dt = (e.publishedDateTime orElse e.updatedDateTime).get
+          dt.isAfter(now.minusMinutes(30))
+        case _ => false
+      }
     entriesToPost.map(e => post(formatEntry(e))).toSeq.sequence.as(())
   }
 
