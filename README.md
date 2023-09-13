@@ -12,7 +12,7 @@ The function requires two environment variables:
 - `RSS_URL` for feed URL e.g. `https://scala.epfl.ch/feed`
 - `WEBHOOK_URL` for Discord webhook URL e.g. `"https://discord.com/api/webhooks/1234567890987654321`
 
-Handler should be `io.github.windymelt.rss2discord.Rss2Discord:handler`.
+Handler should be `io.github.windymelt.rss2discord.Rss2Discord::handler`.
 
 This function does not have state: You must call this function **every 30 minitues** typically with EventBridge.
 
