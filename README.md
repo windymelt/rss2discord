@@ -11,6 +11,8 @@ The function requires two environment variables:
 
 - `RSS_URL` for feed URL e.g. `https://scala.epfl.ch/feed`
 - `WEBHOOK_URL` for Discord webhook URL e.g. `"https://discord.com/api/webhooks/1234567890987654321`
+- `TZ_OFFSET`(optional) for your timezone in hours (defaults to system tz)
+  - this value is used for debugging
 
 Handler should be `io.github.windymelt.rss2discord.Rss2Discord::handler`.
 

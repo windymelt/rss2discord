@@ -19,7 +19,15 @@ import scala.concurrent.duration.FiniteDuration
 
 val feedUrlEnv: Option[String] = sys.env.get("RSS_URL")
 val webhookUrl: String = sys.env("WEBHOOK_URL")
-val tzOffset: Int = sys.env.get("TZ_OFFSET").map(_.toInt).getOrElse(0)
+val tzOffset: Int = sys.env
+  .get("TZ_OFFSET")
+  .map(_.toInt)
+  .getOrElse(
+    FiniteDuration(
+      DateTime.now().zone.getOffset(DateTime.now()),
+      "milliseconds"
+    ).toHours.toInt
+  )
 
 extension (e: SyndEntry)
   def publishedDateTime: Option[DateTime] = Option(e.getPublishedDate).map {
