@@ -48,19 +48,23 @@ object Rss2Discord extends IOApp.Simple {
     import scala.collection.JavaConverters._
 
     val feedUrl = feedUrlEnv.get
-    val feed = new SyndFeedInput().build(new XmlReader(new URL(feedUrl)))
 
-    val now = DateTime.now()
-    val entriesToPost = feed
-      .getEntries()
-      .asScala
-      .filter {
-        case e if (e.publishedDateTime orElse e.updatedDateTime).isDefined =>
-          val dt = (e.publishedDateTime orElse e.updatedDateTime).get
-          dt.isAfter(now.minusMinutes(30))
-        case _ => false
-      }
-    entriesToPost.map(e => post(formatEntry(e))).toSeq.sequence.as(())
+    def entriesToPost(timeAfter: DateTime) = IO.delay {
+      val feed = new SyndFeedInput().build(new XmlReader(new URL(feedUrl)))
+      feed
+        .getEntries()
+        .asScala
+        .filter {
+          case e if (e.publishedDateTime orElse e.updatedDateTime).isDefined =>
+            val dt = (e.publishedDateTime orElse e.updatedDateTime).get
+            dt.isAfter(timeAfter)
+          case _ => false
+        }
+    }
+    for {
+      dt <- IO(DateTime.now())
+      entries <- entriesToPost(timeAfter = dt.minusMinutes(31))
+    } yield entries.toSeq.traverse(e => post(formatEntry(e))).void
   }
 
   def formatEntry(entry: SyndEntry): String = {
@@ -82,10 +86,6 @@ Author: ${entry.getAuthor()}
     val parsedResult =
       clientResource.flatMap(_.run(req)).use(res)
 
-    for {
-      pr <- parsedResult
-    } yield {
-      println(pr)
-    }
+    parsedResult.debug().void
   }
 }
