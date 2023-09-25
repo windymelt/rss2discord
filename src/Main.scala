@@ -40,31 +40,32 @@ extension (e: SyndEntry)
   }
 
 object Rss2Discord extends IOApp.Simple {
+  val feedUrl = feedUrlEnv.get
   def handler(in: InputStream, out: OutputStream, ctx: Context): Unit = main(
     Array()
   )
+  private def entriesToPost(feedUrl: String, timeAfter: DateTime) = IO.delay {
+    import scala.collection.JavaConverters._
+    val feed = new SyndFeedInput().build(new XmlReader(new URL(feedUrl)))
+    feed
+      .getEntries()
+      .asScala
+      .filter {
+        case e if (e.publishedDateTime orElse e.updatedDateTime).isDefined =>
+          val dt = (e.publishedDateTime orElse e.updatedDateTime).get
+          dt.isAfter(timeAfter)
+        case _ => false
+      }
+  }
   def run: IO[Unit] = {
     import cats.implicits._
-    import scala.collection.JavaConverters._
-
-    val feedUrl = feedUrlEnv.get
-
-    def entriesToPost(timeAfter: DateTime) = IO.delay {
-      val feed = new SyndFeedInput().build(new XmlReader(new URL(feedUrl)))
-      feed
-        .getEntries()
-        .asScala
-        .filter {
-          case e if (e.publishedDateTime orElse e.updatedDateTime).isDefined =>
-            val dt = (e.publishedDateTime orElse e.updatedDateTime).get
-            dt.isAfter(timeAfter)
-          case _ => false
-        }
-    }
     for {
       dt <- IO(DateTime.now())
-      entries <- entriesToPost(timeAfter = dt.minusMinutes(31))
-    } yield entries.toSeq.traverse(e => post(formatEntry(e))).void
+      _ <- IO.println(s"finding entries ${dt.minusMinutes(31)} .. $dt")
+      entries <- entriesToPost(feedUrl, timeAfter = dt.minusMinutes(31))
+      _ <- IO.println(s"entriesToPost: ${entries.map(_.getTitle())}")
+      _ <- entries.toSeq.traverse(e => post(formatEntry(e)))
+    } yield ()
   }
 
   def formatEntry(entry: SyndEntry): String = {
@@ -86,6 +87,6 @@ Author: ${entry.getAuthor()}
     val parsedResult =
       clientResource.flatMap(_.run(req)).use(res)
 
-    parsedResult.debug().void
+    parsedResult.debug("DEBUG").flatTap(_ => IO.println("posted")).void
   }
 }
