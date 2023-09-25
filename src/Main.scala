@@ -63,7 +63,7 @@ object Rss2Discord extends IOApp.Simple {
     }
     for {
       dt <- IO(DateTime.now())
-      entries <- entriesToPost(timeAfter = dt.minusMinutes(30))
+      entries <- entriesToPost(timeAfter = dt.minusMinutes(31))
     } yield entries.toSeq.traverse(e => post(formatEntry(e))).void
   }
 
