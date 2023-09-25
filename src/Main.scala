@@ -86,10 +86,6 @@ Author: ${entry.getAuthor()}
     val parsedResult =
       clientResource.flatMap(_.run(req)).use(res)
 
-    for {
-      pr <- parsedResult
-    } yield {
-      println(pr)
-    }
+    parsedResult.debug().void
   }
 }
