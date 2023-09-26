@@ -1,4 +1,5 @@
-# rss2discord
+# rss2discord [![qw Scala version support](https://index.scala-lang.org/windymelt/rss2discord/rss2discord/latest-by-scala-version.svg?platform=jvm)](https://index.scala-lang.org/windymelt/rss2discord/rss2discord) [![scaladoc](https://javadoc.io/badge2/io.github.windymelt/rss2discord_3/scaladoc.svg)](https://javadoc.io/doc/io.github.windymelt/rss2discord_3)
+
 Post latest RSS post to Discord!
 
 This software is intended to be used as AWS Lambda Function.
