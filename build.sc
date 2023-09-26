@@ -20,13 +20,14 @@ object rss2discord extends RootModule with ScalaModule with PublishModule {
   // Ensure AWS Lambda to extract JAR file
   override def prependShellScript: T[String] = ""
   override def artifactName = "rss2discord"
+  override def sonatypeUri = "https://s01.oss.sonatype.org/service/local"
   override def sonatypeSnapshotUri =
     "https://s01.oss.sonatype.org/content/repositories/snapshots"
   def pomSettings = PomSettings(
     description = artifactName(),
     organization = "io.github.windymelt",
     url = "https://github.com/windymelt/rss2discord",
-    licenses = Seq(License.MIT),
+    licenses = Seq(License.`BSD-2-Clause`),
     versionControl = VersionControl.github("windymelt", "rss2discord"),
     developers = Seq(
       Developer("windymelt", "windymelt", "https://github.com/windymelt")
