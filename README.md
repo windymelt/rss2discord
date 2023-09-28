@@ -2,9 +2,7 @@
 
 Post latest RSS post to Discord!
 
-This software is intended to be used as AWS Lambda Function.
-
-## How to post RSS
+## How to post RSS (using AWS)
 
 Use released JAR file for Lambda function.
 
@@ -20,3 +18,28 @@ Handler should be `io.github.windymelt.rss2discord.Rss2Discord::handler`.
 This function does not have state: You must call this function **every 30 minitues** typically with EventBridge.
 
 This function requires some time to run: You may specify timeout to 1 minutes.
+
+## How to post RSS (run manually)
+
+Use released JAR file for local JVM environments.
+
+This tool requires two environment variables:
+
+- `RSS_URL` for feed URL e.g. `https://scala.epfl.ch/feed`
+- `WEBHOOK_URL` for Discord webhook URL e.g. `https://discord.com/api/webhooks/1234567890987654321`
+- `TZ_OFFSET`(optional) for your timezone in hours (defaults to system tz)
+  - this value is used for debugging
+
+Run this command periodically **every 30 minutes**:
+
+```shell
+#!/bin/sh
+cd $(dirname $0)
+RSS_URL='...' WEBHOOK_URL='...' java -jar ./out.jar
+```
+
+You can use `cron` for kicking the script:
+
+```cron
+0,30 * * * * post_discord.sh
+```
