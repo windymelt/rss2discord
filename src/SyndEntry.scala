@@ -1,7 +1,9 @@
 package io.github.windymelt.rss2discord
 
 import com.rometools.rome.feed.synd.SyndEntry
-import com.github.nscala_time.time.Imports._
+import java.time.{OffsetDateTime => DateTime}
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 case class RssEntry(
     title: String,
@@ -20,10 +22,12 @@ extension (e: SyndEntry)
     e.updatedDateTime,
   )
   def publishedDateTime: Option[DateTime] = Option(e.getPublishedDate).map {
-    _.toLocalDateTime
-      .toDateTime(DateTimeZone.forOffsetHours(tzOffset))
+    _.toInstant()
+      .atZone(ZoneId.of(ZoneOffset.ofHours(tzOffset).getId()))
+      .toOffsetDateTime()
   }
   def updatedDateTime: Option[DateTime] = Option(e.getUpdatedDate).map {
-    _.toLocalDateTime
-      .toDateTime(DateTimeZone.forOffsetHours(tzOffset))
+    _.toInstant()
+      .atZone(ZoneId.of(ZoneOffset.ofHours(tzOffset).getId()))
+      .toOffsetDateTime()
   }

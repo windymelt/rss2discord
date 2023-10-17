@@ -1,6 +1,6 @@
 package io.github.windymelt.rss2discord
 
-import com.github.nscala_time.time.Imports._
+import java.time.{OffsetDateTime => DateTime}
 
 class Rss2DiscordSpec extends munit.FunSuite {
   test(

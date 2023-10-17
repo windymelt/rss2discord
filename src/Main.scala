@@ -3,13 +3,14 @@ package io.github.windymelt.rss2discord
 import cats.effect.IO
 import cats.effect.IOApp
 import com.amazonaws.services.lambda.runtime.Context
-import com.github.nscala_time.time.Imports._
 import com.rometools.rome.feed._
 import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
 import org.http4s.blaze.client.BlazeClientBuilder
 import sttp.tapir.client.http4s.Http4sClientInterpreter
+import java.time.{OffsetDateTime => DateTime}
+import java.time.ZoneOffset
 
 import java.io.InputStream
 import java.io.OutputStream
@@ -21,8 +22,10 @@ val tzOffset: Int = sys.env
   .map(_.toInt)
   .getOrElse(
     FiniteDuration(
-      DateTime.now().zone.getOffset(DateTime.now()),
-      "milliseconds",
+      ZoneOffset
+        .of(DateTime.now().toZonedDateTime().getZone().getId())
+        .getTotalSeconds(),
+      "seconds",
     ).toHours.toInt,
   )
 
