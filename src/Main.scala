@@ -16,8 +16,6 @@ import java.io.OutputStream
 import java.net.URL
 import scala.concurrent.duration.FiniteDuration
 
-val feedUrlEnv: Option[String] = sys.env.get("RSS_URL")
-val webhookUrl: String = sys.env("WEBHOOK_URL")
 val tzOffset: Int = sys.env
   .get("TZ_OFFSET")
   .map(_.toInt)
@@ -29,8 +27,6 @@ val tzOffset: Int = sys.env
   )
 
 object Rss2Discord extends IOApp.Simple {
-  val feedUrl = feedUrlEnv.get
-
   def handler(in: InputStream, out: OutputStream, ctx: Context): Unit = main(
     Array(),
   )
@@ -63,10 +59,13 @@ object Rss2Discord extends IOApp.Simple {
 
   def run: IO[Unit] = {
     import cats.implicits._
+    val feedUrlEnv: Option[String] = sys.env.get("RSS_URL")
+    val webhookUrl: String = sys.env("WEBHOOK_URL")
+
     for {
       dt <- IO(DateTime.now())
       _ <- IO.println(s"finding entries ${dt.minusMinutes(31)} .. $dt")
-      entries <- entriesToPost(feedUrl, timeAfter = dt.minusMinutes(31))
+      entries <- entriesToPost(feedUrlEnv.get, timeAfter = dt.minusMinutes(31))
       _ <- IO.println(s"entriesToPost: ${entries.map(_.title)}")
       _ <- entries.toSeq.traverse(e => Discord.post(webhookUrl, formatEntry(e)))
     } yield ()

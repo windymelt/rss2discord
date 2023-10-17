@@ -36,4 +36,8 @@ object rss2discord extends RootModule with ScalaModule with PublishModule {
     )
   )
   override def publishVersion: T[String] = VcsVersion.vcsState().format()
+
+  object test extends ScalaTests with TestModule.Munit {
+    def ivyDeps = Agg(ivy"org.scalameta::munit::0.7.29")
+  }
 }
