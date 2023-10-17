@@ -41,22 +41,36 @@ extension (e: SyndEntry)
 
 object Rss2Discord extends IOApp.Simple {
   val feedUrl = feedUrlEnv.get
+
   def handler(in: InputStream, out: OutputStream, ctx: Context): Unit = main(
     Array()
   )
-  private def entriesToPost(feedUrl: String, timeAfter: DateTime) = IO.delay {
+
+  def filterEntriesByPublished(
+      feeds: Seq[SyndEntry],
+      timeAfter: DateTime
+  ): Seq[SyndEntry] = feeds.filter {
+    case e if (e.publishedDateTime orElse e.updatedDateTime).isDefined =>
+      val dt = (e.publishedDateTime orElse e.updatedDateTime).get
+      dt.isAfter(timeAfter)
+    case _ => false
+  }
+
+  private def entriesToPost(
+      feedUrl: String,
+      timeAfter: DateTime
+  ): IO[Seq[SyndEntry]] = IO.delay {
     import scala.collection.JavaConverters._
     val feed = new SyndFeedInput().build(new XmlReader(new URL(feedUrl)))
-    feed
-      .getEntries()
-      .asScala
-      .filter {
-        case e if (e.publishedDateTime orElse e.updatedDateTime).isDefined =>
-          val dt = (e.publishedDateTime orElse e.updatedDateTime).get
-          dt.isAfter(timeAfter)
-        case _ => false
-      }
+    filterEntriesByPublished(
+      feed
+        .getEntries()
+        .asScala
+        .toSeq,
+      timeAfter
+    )
   }
+
   def run: IO[Unit] = {
     import cats.implicits._
     for {
