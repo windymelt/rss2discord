@@ -14,7 +14,6 @@ object rss2discord extends RootModule with ScalaModule with PublishModule {
     ivy"com.softwaremill.sttp.tapir::tapir-http4s-client:1.7.3",
     ivy"com.softwaremill.sttp.tapir::tapir-json-circe:1.7.3",
     ivy"org.http4s::http4s-blaze-client:0.23.15",
-    ivy"com.github.nscala-time::nscala-time:2.32.0"
   )
 
   def scalaDocOptions = Seq("-siteroot", "docs")
@@ -32,8 +31,12 @@ object rss2discord extends RootModule with ScalaModule with PublishModule {
     licenses = Seq(License.`BSD-2-Clause`),
     versionControl = VersionControl.github("windymelt", "rss2discord"),
     developers = Seq(
-      Developer("windymelt", "windymelt", "https://github.com/windymelt")
-    )
+      Developer("windymelt", "windymelt", "https://github.com/windymelt"),
+    ),
   )
   override def publishVersion: T[String] = VcsVersion.vcsState().format()
+
+  object test extends ScalaTests with TestModule.Munit {
+    def ivyDeps = Agg(ivy"org.scalameta::munit::0.7.29")
+  }
 }
