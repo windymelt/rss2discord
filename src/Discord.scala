@@ -10,7 +10,7 @@ object Discord {
       Http4sClientInterpreter[IO]()
         .toRequest(
           endpoint.DiscordEndpoint.webhook,
-          Some(org.http4s.Uri.unsafeFromString(webhookUrl))
+          Some(org.http4s.Uri.unsafeFromString(webhookUrl)),
         )
         .apply(endpoint.WebhookInput(content))
 

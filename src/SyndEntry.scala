@@ -8,7 +8,7 @@ case class RssEntry(
     link: String,
     author: String,
     publishedAt: Option[DateTime],
-    updatedAt: Option[DateTime]
+    updatedAt: Option[DateTime],
 )
 
 extension (e: SyndEntry)
@@ -17,7 +17,7 @@ extension (e: SyndEntry)
     e.getLink(),
     e.getAuthor(),
     e.publishedDateTime,
-    e.updatedDateTime
+    e.updatedDateTime,
   )
   def publishedDateTime: Option[DateTime] = Option(e.getPublishedDate).map {
     _.toLocalDateTime

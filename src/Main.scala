@@ -24,20 +24,20 @@ val tzOffset: Int = sys.env
   .getOrElse(
     FiniteDuration(
       DateTime.now().zone.getOffset(DateTime.now()),
-      "milliseconds"
-    ).toHours.toInt
+      "milliseconds",
+    ).toHours.toInt,
   )
 
 object Rss2Discord extends IOApp.Simple {
   val feedUrl = feedUrlEnv.get
 
   def handler(in: InputStream, out: OutputStream, ctx: Context): Unit = main(
-    Array()
+    Array(),
   )
 
   def filterEntriesByPublished(
       feeds: Seq[RssEntry],
-      timeAfter: DateTime
+      timeAfter: DateTime,
   ): Seq[RssEntry] = feeds.filter {
     case e if (e.publishedAt orElse e.updatedAt).isDefined =>
       val dt = (e.publishedAt orElse e.updatedAt).get
@@ -47,7 +47,7 @@ object Rss2Discord extends IOApp.Simple {
 
   private def entriesToPost(
       feedUrl: String,
-      timeAfter: DateTime
+      timeAfter: DateTime,
   ): IO[Seq[RssEntry]] = IO.delay {
     import scala.collection.JavaConverters._
     val feed = new SyndFeedInput().build(new XmlReader(new URL(feedUrl)))
@@ -57,7 +57,7 @@ object Rss2Discord extends IOApp.Simple {
         .asScala
         .toSeq
         .map(_.asRssEntry),
-      timeAfter
+      timeAfter,
     )
   }
 
