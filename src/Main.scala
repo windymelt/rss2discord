@@ -36,11 +36,11 @@ object Rss2Discord extends IOApp.Simple {
   )
 
   def filterEntriesByPublished(
-      feeds: Seq[SyndEntry],
+      feeds: Seq[RssEntry],
       timeAfter: DateTime
-  ): Seq[SyndEntry] = feeds.filter {
-    case e if (e.publishedDateTime orElse e.updatedDateTime).isDefined =>
-      val dt = (e.publishedDateTime orElse e.updatedDateTime).get
+  ): Seq[RssEntry] = feeds.filter {
+    case e if (e.publishedAt orElse e.updatedAt).isDefined =>
+      val dt = (e.publishedAt orElse e.updatedAt).get
       dt.isAfter(timeAfter)
     case _ => false
   }
@@ -48,14 +48,15 @@ object Rss2Discord extends IOApp.Simple {
   private def entriesToPost(
       feedUrl: String,
       timeAfter: DateTime
-  ): IO[Seq[SyndEntry]] = IO.delay {
+  ): IO[Seq[RssEntry]] = IO.delay {
     import scala.collection.JavaConverters._
     val feed = new SyndFeedInput().build(new XmlReader(new URL(feedUrl)))
     filterEntriesByPublished(
       feed
         .getEntries()
         .asScala
-        .toSeq,
+        .toSeq
+        .map(_.asRssEntry),
       timeAfter
     )
   }
@@ -66,14 +67,14 @@ object Rss2Discord extends IOApp.Simple {
       dt <- IO(DateTime.now())
       _ <- IO.println(s"finding entries ${dt.minusMinutes(31)} .. $dt")
       entries <- entriesToPost(feedUrl, timeAfter = dt.minusMinutes(31))
-      _ <- IO.println(s"entriesToPost: ${entries.map(_.getTitle())}")
+      _ <- IO.println(s"entriesToPost: ${entries.map(_.title)}")
       _ <- entries.toSeq.traverse(e => Discord.post(webhookUrl, formatEntry(e)))
     } yield ()
   }
 
-  def formatEntry(entry: SyndEntry): String = {
-    s"""[${entry.getTitle()}](${entry.getLink()})
-Author: ${entry.getAuthor()}
+  def formatEntry(entry: RssEntry): String = {
+    s"""[${entry.title}](${entry.link})
+Author: ${entry.author}
 """
   }
 }
