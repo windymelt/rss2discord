@@ -7,6 +7,6 @@ import sttp.tapir.json.circe._
 
 case class WebhookInput(content: String)
 
-object Discord {
+object DiscordEndpoint {
   val webhook = endpoint.post.in(jsonBody[WebhookInput]).out(emptyOutput)
 }

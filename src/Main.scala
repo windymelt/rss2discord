@@ -8,7 +8,6 @@ import com.rometools.rome.feed._
 import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
-import io.github.windymelt.rss2discord.endpoint.Discord
 import org.http4s.blaze.client.BlazeClientBuilder
 import sttp.tapir.client.http4s.Http4sClientInterpreter
 
@@ -28,16 +27,6 @@ val tzOffset: Int = sys.env
       "milliseconds"
     ).toHours.toInt
   )
-
-extension (e: SyndEntry)
-  def publishedDateTime: Option[DateTime] = Option(e.getPublishedDate).map {
-    _.toLocalDateTime
-      .toDateTime(DateTimeZone.forOffsetHours(tzOffset))
-  }
-  def updatedDateTime: Option[DateTime] = Option(e.getUpdatedDate).map {
-    _.toLocalDateTime
-      .toDateTime(DateTimeZone.forOffsetHours(tzOffset))
-  }
 
 object Rss2Discord extends IOApp.Simple {
   val feedUrl = feedUrlEnv.get
@@ -78,7 +67,7 @@ object Rss2Discord extends IOApp.Simple {
       _ <- IO.println(s"finding entries ${dt.minusMinutes(31)} .. $dt")
       entries <- entriesToPost(feedUrl, timeAfter = dt.minusMinutes(31))
       _ <- IO.println(s"entriesToPost: ${entries.map(_.getTitle())}")
-      _ <- entries.toSeq.traverse(e => post(formatEntry(e)))
+      _ <- entries.toSeq.traverse(e => Discord.post(webhookUrl, formatEntry(e)))
     } yield ()
   }
 
@@ -86,21 +75,5 @@ object Rss2Discord extends IOApp.Simple {
     s"""[${entry.getTitle()}](${entry.getLink()})
 Author: ${entry.getAuthor()}
 """
-  }
-
-  def post(content: String): IO[Unit] = {
-    val (req, res) =
-      Http4sClientInterpreter[IO]()
-        .toRequest(
-          endpoint.Discord.webhook,
-          Some(org.http4s.Uri.unsafeFromString(webhookUrl))
-        )
-        .apply(endpoint.WebhookInput(content))
-
-    val clientResource = BlazeClientBuilder[IO].resource
-    val parsedResult =
-      clientResource.flatMap(_.run(req)).use(res)
-
-    parsedResult.debug("DEBUG").flatTap(_ => IO.println("posted")).void
   }
 }
