@@ -5,7 +5,7 @@ import mill._, scalalib._
 import publish._
 
 object rss2discord extends RootModule with ScalaModule with PublishModule {
-  def scalaVersion = "3.3.0"
+  def scalaVersion = "3.3.8"
   def ivyDeps = Agg(
     ivy"com.amazonaws:aws-lambda-java-runtime-interface-client::2.3.2",
     ivy"com.amazonaws:aws-lambda-java-core::1.2.2",
@@ -36,4 +36,5 @@ object rss2discord extends RootModule with ScalaModule with PublishModule {
     )
   )
   override def publishVersion: T[String] = VcsVersion.vcsState().format()
+  override def scalacOptions = super.scalacOptions() ++ Seq("-Yfuture-lazy-vals", "-java-output-version:11")
 }
